@@ -1,0 +1,421 @@
+---
+title: "ex5"
+author: "Ruxue"
+date: "5/7/2021"
+output: html_document
+---
+
+# Chargement des library
+```{r}
+library(tidyr) #Gérer les dataframes
+library(dplyr) #Gérer les dataframes
+library(lubridate) #Gérer les dates
+library(FactoMineR) 
+library(MASS)
+library(pROC)
+library(klaR)
+library(rpart)
+library(rpart.plot)
+library(randomForest)
+library(ISLR)
+library(DMwR)
+```
+
+# Chargement des données
+```{r}
+rm(list=ls())
+data <- read.csv("~/Documents/AnalyseDon/Projet/weatherAUS.csv")
+data
+```
+# Suppression des variables inutiles : Evaporation, Sunshine, Cloud9am, Cloud3pm
+# Suppresion des variables liées au vent
+```{r}
+data = data[, -c(6, 7, 8, 9, 10, 11, 12, 13, 18, 19)]
+head(data)
+```
+
+# Suppression des lignes contiennes des NA
+```{r}
+data = data %>% drop_na()
+```
+
+# Ajout des variables Year, Température moyenne
+```{r}
+data <- mutate(data, Date = as.Date(Date))
+data = data %>% mutate(Year = year(Date))
+```
+
+# Suppresion de variable Date
+```{r}
+data = data[, -1]
+head(data)
+```
+
+# Group by les lignes par location et par année
+```{r}
+by_loca <- data %>% group_by(Location, Year)
+head(by_loca)
+```
+
+# Extraire 2300 lignes pour chaque ville
+```{r}
+by_year = by_loca %>% filter(Year >= 2010 & Year <= 2017) 
+data_year<- by_year %>% group_by(Location)
+data_year = data_year %>% filter(n() > 2300)
+data_year <- data_year %>% slice(1:2300)
+```
+
+# On veut étudier Sydney, Sydney est le 19e ville dans la base
+On supprime la variable Location, car il n'y a plus besoin
+```{r}
+dataReady = data_year[(19*2300+1):(20*2300),]
+dataReady = dataReady[, -c(1, 13)]
+head(dataReady)
+```
+
+```{r}
+dataReady$RainToday=as.factor(dataReady$RainToday)
+dataReady$RainTomorrow=as.factor(dataReady$RainTomorrow)
+attach(dataReady)
+```
+
+# Création d'un échantillon train et d'un échantillon test
+```{r}
+set.seed(1)
+n <- nrow(dataReady)
+p <- ncol(dataReady)-1
+test.ratio <- .2 # ratio of test/train samples
+n.test <- round(n*test.ratio)
+n.test
+```
+
+```{r}
+tr <- sample(1:n,n.test)
+data.test <- dataReady[tr,]
+data.train <- dataReady[-tr,]
+```
+
+# Prédiction pour la pluie de demain
+# LDA, QDA ----------------------------------------------------------------------------
+
+```{r}
+
+## Modèle
+res_lda <- lda(RainTomorrow~.,data=data.train)
+res_qda <- qda(RainTomorrow~.,data=data.train)
+```
+
+
+## Prédiction
+#Utiliser la fonction predict (voir exo 1 ou exo2) et la sortie "class" de la fonction prédite.
+```{r}
+predict_lda = predict(res_lda, data.test)$class
+```
+
+```{r}
+predict_qda = predict(res_qda, data.test)$class
+```
+
+## Table de confusion : utiliser la fonction table pour comparer DIFF de l'échantillon test et ce qui vous avez prédit. 
+
+```{r}
+table_lda = table(data.test$RainTomorrow, predict_lda)
+table_lda
+```
+
+```{r}
+table_qda = table(data.test$RainTomorrow, predict_qda)
+table_qda
+```
+
+
+### Accuracy : il n'y a pas de fonction prédéfini, mais il suffit de compter le nombre de fois où on a bien prédit.
+```{r}
+accuracy_lda = (table_lda[1,1]+table_lda[2,2])/length(predict_lda)  #mean(predict_lda == data.test$DIFF)
+accuracy_lda 
+```
+
+```{r}
+accuracy_qda = (table_qda[1,1]+table_qda[2,2])/length(predict_qda) #mean(predict_qda == data.test$DIFF)
+accuracy_qda
+```
+
+## courbe ROC  ; voici le code
+Avec le package pROC : on represente la sensibilité en fonction de la spécificité (contrairement à ce qui est défini dans le cours ou c'est sensibilité en fonction de 1- spécificité)
+
+```{r}
+#proba a posteriori de succes (dans la deuxième colonne) : 
+pred_lda <- predict(res_lda,newdata=data.test)$posterior[,2] 
+pred_qda <- predict(res_qda,newdata=data.test)$posterior[,2] 
+```
+
+```{r}
+ROC_lda <- roc(data.test$RainTomorrow, pred_lda)
+plot(ROC_lda, print.auc=TRUE,  print.auc.y = 0.5) # Afficher l'aire sous la courbe ROC sur le graphique
+ROC_lda$auc # l'aire sous la courbe ROC
+
+ROC_qda <- roc(data.test$RainTomorrow, pred_qda)
+plot(ROC_qda, add=TRUE, col=2, print.auc=TRUE, print.auc.y=0.4)
+ROC_qda$auc
+```
+On voit que le modèle lda est légèrement meilleur que qda.
+On observe aussi que le modèle est déséquilibré, il prédit la plupart du temps 0, cad il ne pleura pas demain.
+
+
+# CART ------------------------------------------------------------------------------
+
+```{r}
+arbre=rpart(RainTomorrow~.,data.train) 
+```
+
+
+```{r}
+cp.opt <- arbre$cptable[which.min(arbre$cptable[, "xerror"]), "CP"] 
+arbre.opt <- prune(arbre,cp=cp.opt) 
+print(arbre.opt) 
+rpart.plot(arbre.opt) 
+```
+```{r}
+pred_cart = predict(arbre.opt, newdata = data.test, type="class")
+table(data.test$RainTomorrow, pred_cart)
+```
+```{r}
+accuracy_cart = mean(pred_cart == data.test$RainTomorrow)
+accuracy_cart
+```
+
+```{r}
+#proba a posteriori de succes (dans la deuxième colonne) : 
+pred_cart_prob <- predict(arbre.opt,newdata=data.test, type='prob')[,2]
+
+ROC_cart <- roc(data.test$RainTomorrow, pred_cart_prob)
+plot(ROC_cart, print.auc=TRUE,  print.auc.y = 0.5) # Afficher l'aire sous la courbe ROC sur le graphique
+ROC_cart$auc # l'aire sous la courbe ROC
+```
+
+# Random Forest --------------------------------------------------------------------------
+
+
+```{r}
+fit_RF <-  randomForest(RainTomorrow~., data.train)
+fit_RF
+```
+```{r}
+plot(fit_RF)
+```
+Représentation de l’erreur Out of Bag : Les données non utilisées dans les échantillons boostrap sont utilisées
+pour estimer l’erreur de classification : Pour l’observation numéro i, on regarde les échantillons bootstrapés ne
+contenant pas cette observation. On construit un arbre pour chacun de ces échantillons, et on prédit la classe
+pour l’observation i avec cette forêt. Et on compare avec la vérité. En faisant ça pour chaque observation, on
+obtient l’erreur OOB.
+
+En noire, erreur de classification totale, en rouge et verte les erreurs de classification pour les 2 classes : vert
+pour la class Yes et rouge pour la class No. L’erreur OOB pour la classe Yes est très élevée !
+
+```{r}
+table(data.test$RainTomorrow)
+```
+
+
+```{r}
+pred_rf = predict(fit_RF, newdata = data.test, type="class")
+confusion = table(data.test$RainTomorrow, pred_rf)
+confusion
+```
+```{r}
+accuracy_RF = mean(pred_rf == data.test$RainTomorrow)
+accuracy_RF
+```
+
+```{r}
+err_RF = mean(pred_rf != data.test$RainTomorrow)
+err_RF
+```
+
+```{r}
+# erreur class No :
+confusion[1,2]/sum(confusion[1,])
+```
+
+```{r}
+# erreur class No :
+confusion[2,1]/sum(confusion[2,])
+```
+Globalement bonne accuracy ie peu d’erreurs mais beaucoup d’erreur pour classe Yes.
+
+```{r}
+#proba a posteriori de succes (dans la deuxième colonne) : 
+pred_rf_prob <- predict(fit_RF,newdata=data.test, type='prob')[,2]
+
+ROC_rf <- roc(data.test$RainTomorrow, pred_rf_prob)
+plot(ROC_rf, print.auc=TRUE,  print.auc.y = 0.5) # Afficher l'aire sous la courbe ROC sur le graphique
+ROC_rf$auc # l'aire sous la courbe ROC
+```
+
+# Regression logistique --------------------------------------------------------------
+
+```{r}
+### Modèle
+logit.train <- glm(RainTomorrow ~ ., family = binomial , data=data.train)
+logit.train.AIC <- step(logit.train) #backward par defaut
+```
+
+
+# Prédiction
+```{r}
+pred_logit <- predict(logit.train.AIC, data.test, type="response")
+class_logit <- ifelse(pred_logit >1/2, "Yes", "No")
+```
+
+
+#Table de confusion et accuracy
+```{r}
+table(data.test$RainTomorrow, class_logit)
+```
+
+```{r}
+accuracy_logit = mean(class_logit == data.test$RainTomorrow)
+accuracy_logit
+```
+
+
+```{r}
+err = mean(class_logit != data.test$RainTomorrow) # taux erreur total
+paste('err=',err)
+```
+
+```{r}
+err_No = confusion['No','Yes']/sum(confusion['No',]) # taux erreur classe No
+paste('err_No=',err_No)
+```
+
+```{r}
+err_Yes = confusion['Yes', 'No']/sum(confusion['Yes',]) # taux erreur classe Yes
+paste('err_Yes=',err_Yes)
+```
+
+Meme probleme.
+
+# On ré-équilibre le jeu d'apprentissage
+
+```{r}
+data.train.balanced <- SMOTE(RainTomorrow ~., as.data.frame(data.train))
+table(data.train.balanced$RainTomorrow)
+```
+
+```{r}
+fit_RF <- randomForest(RainTomorrow~.,data.train.balanced)
+fit_RF
+```
+
+```{r}
+plot(fit_RF)
+```
+```{r}
+#Prédiction
+class_RF= predict(fit_RF, newdata=data.test, type="response")
+```
+
+
+```{r}
+#Table de confusion
+confusion=table(class_RF, data.test$RainTomorrow)
+confusion
+```
+```{r}
+table(data.test$RainTomorrow)
+```
+
+```{r}
+#Accuracy
+accuracy_RF = mean(class_RF == data.test$RainTomorrow)
+accuracy_RF
+```
+
+```{r}
+# erreur class No :
+err_No = confusion['Yes', 'No']/sum(confusion[,'No']) # taux erreur classe No
+paste('err_No=',err_No)
+```
+
+```{r}
+# erreur class Yes :
+err_Yes = confusion['No','Yes']/sum(confusion[,'Yes']) # taux erreur classe Yes
+paste('err_Yes=',err_Yes)
+```
+
+Erreur Yes est diminué mais toujours élevé
+
+# Régression logistique
+
+```{r}
+logit.train <- glm(RainTomorrow ~ ., family = binomial , data=data.train.balanced)
+logit.train.AIC <- step(logit.train) #backward par defaut
+```
+
+
+```{r}
+#Prédiction
+pred_logit <- predict(logit.train.AIC, data.test, type="response")
+class_logit <- ifelse(pred_logit >1/2, "Yes", "No")
+```
+
+```{r}
+#Confusion
+confusion = table(class_logit, data.test$RainTomorrow)
+accuracy_logit = mean(class_logit == data.test$RainTomorrow)
+accuracy_logit
+```
+
+
+```{r}
+mean(class_logit != data.test$RainTomorrow) # taux erreur total
+```
+```{r}
+paste('err=',err)
+```
+
+
+```{r}
+err_No = confusion['Yes', 'No']/sum(confusion[,'No']) # taux erreur classe No
+paste('err_No=',err_No)
+```
+
+```{r}
+err_Yes = confusion['No','Yes']/sum(confusion[,'Yes']) # taux erreur classe Yes
+paste('err_Yes=',err_Yes)
+```
+
+```{r}
+B=50
+error= matrix(NA, nrow=B, ncol=6)
+colnames(error)=c('RF total', 'logit total','RF No','logit No', 'logit Yes', 'RF Yes')
+for (b in 1:B)
+{
+set.seed(b)
+tr <- sample(1:n,n.test)
+data.test <- data[tr,]
+data.train <- data[-tr,]
+data.train.balanced <- SMOTE(RainTomorrow ~., as.data.frame(data.train))
+fit_RF <- randomForest(RainTomorrow~.,data.train.balanced)
+class_RF= predict(fit_RF, newdata=data.test, type="response")
+error[b,c(1,3,5)] = c(mean(class_RF != data.test$RainTomorrow), confusion['Yes', 'No']/sum(confusion[,'No']) ,
+confusion['No','Yes']/sum(confusion[,'Yes']) )
+logit.train <- glm(RainTomorrow ~ ., family = binomial , data=data.train.balanced)
+logit.train.AIC <- step(logit.train) #backward par defaut
+pred_logit <- predict(logit.train.AIC, data.test, type="response")
+class_logit <- ifelse(pred_logit >1/2, "Yes", "No")
+confusion = table(class_logit, data.test$RainTomorrow)
+error[b,c(2,4,6)] = c(mean(class_logit!= data.test$RainTomorrow), confusion['Yes', 'No']/sum(confusion[,'No']) ,
+confusion['No','Yes']/sum(confusion[,'Yes']) )
+}
+```
+
+```{r}
+boxplot(error, las=3)
+```
+
+
+Certes, avec un jeu d'apprentissage équilibré, notre taux de réussite est toujours environ 75%, mais cela vient du le fait que la météo est toujours compliqué à prédire, avec un tel taux de réussite est déja une bonne réussite. 
+
+Cependant, même en ré-équilibrant le jeu, nous nous retrouvons toujours sur un prédicteur qui a tendance à toujours prédire NON, car nous avons toujours 2 fois plus de NON que Yes dans data.train.

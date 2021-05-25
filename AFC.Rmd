@@ -1,0 +1,233 @@
+---
+title: "AFC"
+author: "Ruxue"
+date: "3/29/2021"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+# Chargement des library
+
+```{r}
+library(tidyr) #Gérer les dataframes
+library(dplyr) #Gérer les dataframes
+library(lubridate) #Gérer les dates
+library(FactoMineR) 
+```
+
+
+# Chargement des données
+
+```{r}
+rm(list=ls())
+data <- read.csv("~/Documents/AnalyseDon/Projet/weatherAUS.csv")
+data
+```
+# Suppression des variables inutiles : Evaporation, Sunshine, Cloud9am, Cloud3pm
+
+```{r}
+data = data[, -c(6, 7, 18, 19)]
+data
+```
+# Suppression des lignes contiennes des NA
+
+```{r}
+data = data %>% drop_na()
+```
+
+# Ajout des variables Year, Month, Day
+
+```{r}
+data <- mutate(data, Date = as.Date(Date))
+data = data %>% mutate(Year = year(Date),
+                       Month = month(Date), 
+                       Day = day(Date))
+data
+```
+
+# Group by les lignes par location et par année
+
+```{r}
+by_loca <- data %>% group_by(Location, Year)
+by_loca
+```
+# Visualisation de nombre de jours effectifs par année par ville
+```{r}
+by_loca %>% count()
+```
+
+
+# Extraire 2300 lignes pour chaque ville
+
+```{r}
+by_year = by_loca %>% filter(Year >= 2010 & Year <= 2017) 
+data_year<- by_year %>% group_by(Location)
+data_year = data_year %>% filter(n() > 2300)
+data_year <- data_year %>% slice(1:2300)
+data_year
+```
+#Etudions la direction du vent pour chaque ville 
+
+```{r}
+list = data_year %>% group_by(Location, WindGustDir) %>% count()
+```
+
+```{r}
+
+```
+#Construction d'un nouveau dataframe du type Election President
+#Individus : les villes
+#Variables : les direction du WindGustDir
+
+```{r}
+windDir = list$WindGustDir[1:16]
+ville = (list %>% group_by(Location) %>% slice(1))$Location
+
+#DataFrame que nous allons faire AFD
+dataAFD = matrix(data=NA,nrow=25,ncol=16)
+rownames(dataAFD)=ville
+colnames(dataAFD)=windDir
+
+for (i in 1:12)
+  dataAFD[,i]=(data_year %>% filter(WindGustDir == windDir[i]) %>% count())$n
+for (i in 14:16)
+  dataAFD[,i]=(data_year %>% filter(WindGustDir == windDir[i]) %>% count())$n
+
+#Cas particulier pour SW : il faut ajouter 0 pour Cairns
+windSW = (data_year %>% filter(WindGustDir == windDir[13]) %>% count())
+dataAFD[,13]= c((windSW$n)[1:4],0,(windSW$n)[5:24])
+
+#Convertir en type DataFrame
+dataAFD = as.data.frame(dataAFD)
+```
+
+```{r}
+dataAFD
+```
+```{r}
+str(dataAFD)
+```
+
+
+
+*!!!!!!Partie analyse : Ce n'est pas encore fait pour le moment!!!!!!*
+
+# ------------------------------------- Un breif PCA -----------------------------------------
+
+```{r}
+res = PCA(dataAFD)
+```
+On observe que 
+- le premier axe représente plus l'opposition  East / West
+- le deuxieme axe représente plus l'opposition SN / WE
+
+# --------------------------------- AFD commence ----------------------------------------------
+
+## La part de chaque direction du vent
+
+apply(data, 2, sum) : sommer sur les colonnes de data
+
+```{r}
+barplot(apply(dataAFD, 2, sum)/sum(dataAFD), las=3)
+```
+On observe que les vents qui viennent de l'est et de l'ouest sont plus représentatifs.
+
+## Les villes en terme de la direction du vent
+
+```{r}
+barplot(apply(dataAFD, 1, sum)/sum(dataAFD), las=3)
+```
+Les parts de chaque ville sont équitables, car nous avons extrait 2300 jours pour chaque ville.
+
+```{r}
+chisq.test(dataAFD)
+```
+
+pvalue < 0.05 => On rejette H0 => les deux variables sont liées, et ne sont  donc pas indépendantes
+
+
+
+```{r}
+res=CA(dataAFD)
+```
+```{r}
+res$eig
+```
+
+On garde 5 axes pour que l'information soit représentée de manière satisfaisante (82,6%).
+```{r}
+barplot(res$eig[, 2])
+```
+```{r}
+plot(res, invisible="row")
+```
+```{r}
+res$col$cos2
+```
+
+
+Direction bien représentés
+```{r}
+plot(res, invisible="row", selectCol="cos2 0.6")
+```
+Seuls les vents qui viennent de la direction de l'Est sont bien représentés
+
+```{r}
+res$col$contrib
+```
+
+```{r}
+plot(res, invisible="row", selectCol="contrib 8")
+```
+Axe 1: ENE / N
+Axe 2: SW / SE
+
+##Regarder axe 3 et 4
+
+```{r}
+plot(res, invisible="row", selectCol="contrib 8", axe=c(3, 4))
+```
+Axe 3: NE / SE
+Axe 4: NNW / W
+
+##Regarder axe 1 et 5
+```{r}
+plot(res, invisible="row", selectCol="contrib 8", axe=c(1, 5))
+```
+Axe 5: N / NE
+
+
+
+
+
+```{r}
+plot(res, selectRow = "cos2 0.6", selectCol = "cos2 0.5")
+```
+
+- Il y a des régions dont les résultats sont proches des résultats nationaux : des points qui sont proches du centre de gravité, par exemple : Mildura.
+- Il y a des régions qui se ressemblent : des points bleus confondus, par exemple : WaggaWagga et PerthAirport.
+- Townsville a surtout des vents qui viennent du ENE.
+- Cairns a peu de vent qui vient du WSW.
+
+Si on regarde un deuxième plan
+```{r}
+plot(res, selectRow = "cos2 0.6", selectCol = "cos2 0.5", axe=c(3, 4))
+```
+- Hobart a surtout du vent vient de Nord-West
+
+
+```{r}
+profil.Mildura = round(dataAFD["Mildura", ]/sum(dataAFD["Mildura", ]), 2)
+profil.Townsville = round(dataAFD["Townsville", ]/sum(dataAFD["Townsville", ]), 2)
+profil.Hobart = round(dataAFD["Hobart", ]/sum(dataAFD["Hobart", ]), 2)
+profil.Cairns = round(dataAFD["Cairns", ]/sum(dataAFD["Cairns", ]), 2)
+profil.moyen = round(apply(dataAFD, 2, sum)/sum(apply(dataAFD, 2, sum)), 2)
+
+M = rbind(profil.Mildura, profil.Townsville, profil.Hobart, profil.Cairns, moyen=profil.moyen)
+M
+```
+```{r}
+barplot(t(M), xlim=c(0, ncol(t(M)) + 3), col=1:16, legend.text=colnames(dataAFD), args.legend = list(x=ncol(t(M)) + 3), las=3)
+```
+

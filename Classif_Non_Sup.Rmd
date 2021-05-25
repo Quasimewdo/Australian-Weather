@@ -1,0 +1,311 @@
+---
+title: "Analyse non supervisée"
+output: html_document
+---
+# Chargement des library
+```{r}
+library(tidyr) #Gérer les dataframes
+library(dplyr) #Gérer les dataframes
+library(lubridate) #Gérer les dates
+library(FactoMineR) 
+library(MASS)
+library(cluster)
+```
+
+```{r}
+data <-read.csv("~/Documents/AnalyseDon/Projet/weatherAUS.csv")
+head (data)
+str(data)
+dim(data)
+```
+
+# Suppression des variables inutiles : Evaporation, Sunshine, Cloud9am, Cloud3pm
+# Suppresion des variables liées au vent
+
+```{r}
+data = data[, -c(6, 7, 8, 9, 10, 11, 12, 13, 18, 19)]
+head(data)
+```
+
+```{r}
+data=data[!(rowSums(is.na(data))),] #On supprime les NA
+str(data)
+attach(data)
+dim(data)
+head(data)
+```
+
+# Ajout des variables Year, Month, Température moyenne
+
+```{r}
+data <- mutate(data, Date = as.Date(Date))
+data = data %>% mutate(Year = year(Date),
+                       AvgTemp = (MaxTemp + MinTemp)/2)
+```
+
+# Suppresion de la variable Date
+
+```{r}
+data = data[, -1]
+head(data)
+```
+
+```{r}
+# Group by les lignes par location et par année
+by_loca <- data %>% group_by(Location, Year)
+head(by_loca)
+
+# Extraire 2300 lignes pour chaque ville
+by_year = by_loca %>% filter(Year >= 2010 & Year <= 2017) 
+data_year<- by_year %>% group_by(Location)
+data_year = data_year %>% filter(n() > 2300)
+data_year <- data_year %>% slice(1:2300)
+```
+
+
+# On veut étudier Sydney, Sydney est le 19e ville dans la base
+
+On supprime la variable Location, car il n'y a plus besoin.
+```{r}
+dataReady = data_year[(19*2300+1):(20*2300),]
+data = dataReady[, -c(1, 11, 12, 13)]
+head(data)
+```
+
+```{r}
+summary(data)
+pairs(data)
+```
+
+
+On peut par exemple dire que MinTemp, MaxTemp, Temp9am,Temp3pm sont fortement corrélées.
+
+# CAH
+
+Les variables étant dans des unités différentes, on va travailler sur les données centrées réduites pour accorder la même importance à chaque variable et éviter que les variables à forte variance pèsent indûment sur les résultats.
+```{r}
+data.cr <- scale(data,center=TRUE, scale=TRUE)
+d.data.cr <- dist(data.cr)
+```
+
+On utilise la mesure de Ward : 
+```{r}
+cah.ward <- hclust(d.data.cr, method="ward.D2")
+```
+
+On affichage le dendrogramme :
+```{r}
+plot(cah.ward, hang=-1, cex=0.2) 
+```
+
+## Nombre de classes ?
+
+Au vu du dendogramme, on va garder 4 ou 5 groupes  car après les hauteurs des branches deviennent trop grandes (à l'oeil, on de voir les paquets qui se détachent).
+```{r}
+cah.ward$height
+barplot(cah.ward$height)
+```
+
+Perte d'inertie quand on passe de k à k+1 classes. 
+Au début faible perte d'inertie donc le regoupement est pertinent. 
+La dernière hauteur représente la perte d'inertie inter-classe quand on passe de 2 à 1 classe. La perte est importante donc le  regroupement est non pertinent.
+
+Combien de groupes garder ? La perte devient plus importante quand on passe de 4 à 3 classes. Donc on peut garder 4 classes. 
+Si on sépare en 5 classes, alors y aura un groupe très petit.
+
+
+```{r}
+plot(cah.ward, hang =-1,main="ward.D2",cex=0.2)  
+K=4
+rect.hclust(cah.ward,K)
+```
+
+```{r}
+groupes.cah <- cutree(cah.ward, K)
+groupes.cah
+table(groupes.cah)
+```
+
+## Interprétation des groupes
+
+```{r}
+for (i in 1:K)
+{ cat("groupe", i,"\n")
+  I=which(groupes.cah==i)
+  print(rownames(data)[I]) }
+```
+
+
+Caractéristiques de chaque groupe.
+```{r}
+Means_groupes <- matrix(NA, nrow=K, ncol=dim(data)[2])
+colnames(Means_groupes)=colnames(data)
+rownames(Means_groupes) =1:K
+for (i in 1:K) 
+  Means_groupes[i,]<- colMeans(data[groupes.cah==i,])
+round(Means_groupes)
+
+```
+
+Les groupes sont séparés selon la température:
+groupe 1 : AvgTemp = 21
+groupe 2 : AvgTemp = 23
+groupe 3 : AvgTemp = 19
+groupe 4 : AvgTemp = 17
+
+
+# Kmeans
+
+## Avec K=4 classes d'après la CAH
+
+```{r}
+kmeans.result <- kmeans(data.cr,centers=K)
+kmeans.result
+```
+
+```{r}
+kmeans.result <- kmeans(data.cr,centers=K)
+kmeans.result$size
+```
+
+Les résultats changent car sont dépendants de l'initialisation ---> choisir une bonne initialisation (avec CAH par exemple) ou stabiliser le problème du choix de l'initialisation en lançant plusieurs kmeans.
+
+## Initialisation avec CAH 
+
+```{r}
+init <- matrix(NA, nrow=K, ncol=dim(data)[2])
+colnames(init)=colnames(data)
+for (i in 1:K) init[i,] <- colMeans(data.cr[groupes.cah==i,])
+init
+```
+Attention à bien prendre l'init avec colMeans sur les données centrées réduites parce qu'on lance kmeans sur les données centrées réduites (et sinon problème d'échelle : les centres des classes ne sont pas adaptés)
+
+```{r}
+kmeans.initCAH <- kmeans(data.cr, centers= init)
+```
+
+
+## Stabilisation en lançant plusieurs initialisations
+
+```{r}
+kmeans.result <- kmeans(data.cr,centers=K,nstart=1000)
+```
+
+
+## Comparaison
+
+```{r}
+table(groupes.cah, kmeans.initCAH$cluster)
+table(groupes.cah,kmeans.result$cluster)
+table(kmeans.initCAH$cluster,kmeans.result$cluster)
+```
+On retrouve ici les mêmes groupes avec kmeans initialisé en CAH et kmeans avec plusieurs initialiations (à label switching près sur les groupes).
+
+## Sans a-priori sur le choix de K avec la CAH, comment choisir K ?
+
+```{r}
+#Evaluer la proportion d’inertie intra-classe
+inertie.intra <- rep(0,times=10)
+for (k in 1:10){
+kmeans.result <- kmeans(data.cr,centers=k,nstart=100)
+inertie.intra[k] <- kmeans.result$tot.withinss/kmeans.result$totss
+}
+# Graphique
+plot(1:10,inertie.intra,type="b",xlab="Nb. de groupes",ylab="% inertie intra")
+```
+
+À partir de K = 4 classes, l’ajout d’un groupe supplémentaire ne diminue pas “significativement” la part d’inertie intra.
+
+
+## Interprétation des classes avec une ACP
+
+```{r}
+kmeans.result <- kmeans(data.cr,centers=K,nstart=1000)
+pairs(data, col=kmeans.result$cluster )
+```
+
+## ACP 
+
+```{r}
+res=PCA(data,scale.unit=TRUE, graph=FALSE)
+```
+```{r}
+res$eig
+```
+```{r}
+plot(res, choix="var")
+```
+
+axe 1 indique importance de la température
+axe 2 indique importance de la pression contre d'humidité
+
+#Plot selon Tla Température moyenne
+```{r}
+plot(res, choix="ind", habillage=10)
+```
+
+```{r}
+#Meth 1 : obtenir le graphe à la main :
+plot(res$ind$coord[,1], res$ind$coord[,2], col=kmeans.result$cluster, cex=res$ind$cos2, ylim=c(-4,4))
+abline(h=0)
+abline(v=0)
+```
+Meth 2: en rajoutant la classe au data frame, en lancant une ACP avec la classe comme variable qualitative
+supplémentaire, et en utilisant l’option habillage de plot :
+
+```{r}
+data.Avecclasse = cbind.data.frame(data, classe = factor(kmeans.result$cluster))
+head(data.Avecclasse)
+```
+
+```{r}
+dim(data.Avecclasse)
+```
+
+```{r}
+res=PCA(data.Avecclasse,scale.unit=TRUE, quali.sup = 11, graph=FALSE)
+plot(res, choix="ind", habillage=11, cex=0.7, select= "cos2 0.7")
+```
+
+Classe 1 : Température moyenne élevée
+Classe 2 : Température moyenne faible
+Classe 3 : Température moyenne-moyenne, Humidité faible, Pression élevée
+Classe 3 : Température moyenne-moyenne, Humidité forte, Pression faible
+
+## Silhouette
+
+```{r}
+sil= silhouette(kmeans.result$cluster,dist(data.cr))
+rownames(sil)=rownames(data)
+sil
+```
+
+Cluster 2 a des silouettes proche de 1, donc bien placés.
+Cluster 1 a des individus dont silhouettes négétifs, donc mal placés.
+
+## PAM
+
+```{r}
+pam.result <- pam(data.cr, K)
+pam.result
+par(mfrow=c(1,2))
+plot(pam.result)
+```
+```{r}
+# le premier graphe correspond à l'ACP.
+# le deuxième graphe aux silhouettes.
+table(pam.result$clustering, kmeans.result$cluster)
+```
+
+```{r}
+res=FAMD(dataReady)
+```
+
+## On lance CAH avec la fonction HCPC
+
+```{r}
+cah = HCPC(res, nb.clust = 4)
+```
+
+
+
