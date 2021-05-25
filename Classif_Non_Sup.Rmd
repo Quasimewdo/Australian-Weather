@@ -13,7 +13,7 @@ library(cluster)
 ```
 
 ```{r}
-data <-read.csv("~/Documents/AnalyseDon/Projet/weatherAUS.csv")
+data <-read.csv("weatherAUS.csv")
 head (data)
 str(data)
 dim(data)
