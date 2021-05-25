@@ -5,9 +5,9 @@ Nous avons à disposition des données de la météo de l'Australie.
 Avant de pouvoir l'utiliser, nous allons effectuer des mises en structure en fonction des différents type d'analyse. Mais en général, nous avons éliminé les variables qui contiennent que des NA (Evaporation, Sunshine, Cloud9am, Cloud3pm). Puis nous avons effectué un trie en fonction de la date et de la ville : nous avons extrait 2300 lignes par ville de l'année 2010 à 2017.  
 
 
-##Analyser les directions du rafale du vent de 25 villes
+## Analyser les directions du rafale du vent de 25 villes
 
-###ACP : 
+### ACP : 
 
 Axe 1: ENE / N  
 Axe 2: SW / SE  
@@ -15,7 +15,7 @@ Axe 3: NE / SE
 Axe 4: NNW / W  
 Axe 5: N / NE  
 
-###AFC : 
+### AFC : 
 
 - Il y a des régions dont les résultats sont proches des résultats nationaux : des points qui sont proches du centre de gravité, par exemple : Mildura.  
 - Il y a des régions qui se ressemblent : des points bleus confondus, par exemple : WaggaWagga et PerthAirport.  
@@ -23,18 +23,18 @@ Axe 5: N / NE
 - Cairns a peu de vent qui vient du WSW.  
 - Hobart a surtout du vent vient de Nord-West
 
-##Effectuer une classification des 2300 jours du Sydney
+## Effectuer une classification des 2300 jours du Sydney
 
 Ici, nous nous intéressons pas aux états des vents, donc nous avons éliminés ces variables.  
 Après avoir extrait les 2300 lignes du Sydney, nous avons aussi supprimé les variables Location, et Year.  
 Nous avons ajouté une variable AvgTemp pour faciliter analyser les résultats.  
 
-###ACP : 
+### ACP : 
 
 Axe 1 indique importance de la température.  
 Axe 2 indique importance de la pression contre d'humidité.  
 
-###Classification non supervisée (CAH, kmeans) : 
+### Classification non supervisée (CAH, kmeans) : 
 Les individus sont classés en fonction de la température, la humidité et la pression : 
 
 - Classe 1 : Température moyenne élevée
@@ -43,15 +43,15 @@ Les individus sont classés en fonction de la température, la humidité et la p
 - Classe 4 : Température moyenne-moyenne, Humidité forte, Pression faible
 
 
-##Classification supervisée : Prédire la météo du lendemain, plus particulièrement s'il va pleuvoir pour Sydney
+## Classification supervisée : Prédire la météo du lendemain, plus particulièrement s'il va pleuvoir pour Sydney
 
-###Première analyse : Jeu de données non équilibré
+### Première analyse : Jeu de données non équilibré
 
 lda légèrement meilleur que qda : taux de réussite environ égal à 75%
 
 Le modèle prédit "No" la plupart du temps -> taux d'erreur de No est petit, mais de Yes est très grand.  
 
-###Jeu de données ré-équilibré
+### Jeu de données ré-équilibré
 
 Taux d'erreur de Yes diminue mais reste non négligeable.  
 
