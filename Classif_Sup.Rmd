@@ -24,7 +24,7 @@ library(DMwR)
 # Chargement des données
 ```{r}
 rm(list=ls())
-data <- read.csv("~/Documents/AnalyseDon/Projet/weatherAUS.csv")
+data <- read.csv("weatherAUS.csv")
 data
 ```
 # Suppression des variables inutiles : Evaporation, Sunshine, Cloud9am, Cloud3pm
