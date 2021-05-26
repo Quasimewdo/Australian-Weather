@@ -67,7 +67,7 @@ data_year <- data_year %>% slice(1:2300)
 
 # On veut étudier Sydney, Sydney est le 19e ville dans la base
 
-On supprime la variable Location, car il n'y a plus besoin.
+On supprime la variable Location, car il n'y en a plus besoin.
 ```{r}
 dataReady = data_year[(19*2300+1):(20*2300),]
 data = dataReady[, -c(1, 11, 12, 13)]
@@ -109,8 +109,8 @@ barplot(cah.ward$height)
 ```
 
 Perte d'inertie quand on passe de k à k+1 classes. 
-Au début faible perte d'inertie donc le regoupement est pertinent. 
-La dernière hauteur représente la perte d'inertie inter-classe quand on passe de 2 à 1 classe. La perte est importante donc le  regroupement est non pertinent.
+Au début faible perte d'inertie donc le regroupement est pertinent. 
+La dernière hauteur représente la perte d'inertie inter-classe quand on passe de 2 à 1 classe. La perte est importante donc le regroupement est non pertinent.
 
 Combien de groupes garder ? La perte devient plus importante quand on passe de 4 à 3 classes. Donc on peut garder 4 classes. 
 Si on sépare en 5 classes, alors y aura un groupe très petit.
@@ -283,7 +283,7 @@ sil
 ```
 
 Cluster 2 a des silhouettes proches de 1, donc bien placés.
-Cluster 1 a des individus dont les silhouettes sont négétives, donc mal placés.
+Cluster 1 a des individus dont les silhouettes sont négatives, donc mal placés.
 
 ## PAM
 
