@@ -1,6 +1,6 @@
 ---
-title: "ex5"
-author: "Ruxue"
+title: "Classification Supervisée"
+author: "Ruxue & Majda"
 date: "5/7/2021"
 output: html_document
 ---
@@ -25,7 +25,7 @@ library(DMwR)
 ```{r}
 rm(list=ls())
 data <- read.csv("weatherAUS.csv")
-data
+head(data)
 ```
 # Suppression des variables inutiles : Evaporation, Sunshine, Cloud9am, Cloud3pm
 # Suppresion des variables liées au vent
@@ -414,6 +414,8 @@ confusion['No','Yes']/sum(confusion[,'Yes']) )
 ```{r}
 boxplot(error, las=3)
 ```
+  
+
 Nous observons que logit est légèrement meilleur que RF.
 
 Certes, avec un jeu d'apprentissage équilibré, notre taux de réussite est toujours environ 75%, mais cela vient du le fait que la météo est toujours compliqué à prédire, avec un tel taux de réussite est déja une bonne réussite. 
