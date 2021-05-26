@@ -16,7 +16,7 @@ Assurez-vous bien de disposer des packages suivants:
 - ISLR
 - DMwR
 
-S'il vous en manque, il vous suffit d'entrer la commande install.package("nom_du_package_a_installer")
+S'il vous en manque, il vous suffit d'effectuer la commande install.package("nom_du_package_a_installer")
 
 # Australian-Weather
 
