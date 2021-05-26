@@ -1,3 +1,23 @@
+# Librairies utilisées
+
+Assurez-vous bien de disposer des packages suivants:
+
+- tidyr               #Gérer les dataframes
+- dplyr               #Gérer les dataframes
+- lubridate           #Gérer les dates
+- FactoMineR
+- MASS
+- cluster
+- pROC
+- klaR
+- rpart
+- rpart.plot
+- randomForest
+- ISLR
+- DMwR
+
+S'il vous en manque, il vous suffit d'entrer la commande install.package("nom_du_package_a_installer")
+
 # Australian-Weather
 
 Nous avons à disposition des données de la météo de l'Australie.   
@@ -5,7 +25,7 @@ Nous avons à disposition des données de la météo de l'Australie.
 Avant de pouvoir l'utiliser, nous allons effectuer des mises en structure en fonction des différents type d'analyse. Mais en général, nous avons éliminé les variables qui contiennent que des NA (Evaporation, Sunshine, Cloud9am, Cloud3pm). Puis nous avons effectué un trie en fonction de la date et de la ville : nous avons extrait 2300 lignes par ville de l'année 2010 à 2017.  
 
 
-## Analyser les directions du rafale du vent de 25 villes
+## Analyser les directions de rafale du vent de 25 villes
 
 ### ACP : 
 
@@ -21,13 +41,13 @@ Axe 5: N / NE
 - Il y a des régions qui se ressemblent : des points bleus confondus, par exemple : WaggaWagga et PerthAirport.  
 - Townsville a surtout des vents qui viennent du ENE.  
 - Cairns a peu de vent qui vient du WSW.  
-- Hobart a surtout du vent qui vient de Nord-West
+- Hobart a surtout du vent qui vient de Nord-West.
 
 ## Effectuer une classification des 2300 jours du Sydney
 
 Ici, nous nous intéressons pas aux états des vents, donc nous avons éliminés ces variables.  
 Après avoir extrait les 2300 lignes du Sydney, nous avons aussi supprimé les variables Location, et Year.  
-Nous avons ajouté une variable AvgTemp pour faciliter analyser les résultats.  
+Nous avons ajouté une variable AvgTemp pour faciliter l'analyse des résultats.  
 
 ### ACP : 
 
