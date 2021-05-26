@@ -21,7 +21,7 @@ Axe 5: N / NE
 - Il y a des régions qui se ressemblent : des points bleus confondus, par exemple : WaggaWagga et PerthAirport.  
 - Townsville a surtout des vents qui viennent du ENE.  
 - Cairns a peu de vent qui vient du WSW.  
-- Hobart a surtout du vent vient de Nord-West
+- Hobart a surtout du vent qui vient de Nord-West
 
 ## Effectuer une classification des 2300 jours du Sydney
 
@@ -35,7 +35,7 @@ Axe 1 indique importance de la température.
 Axe 2 indique importance de la pression contre d'humidité.  
 
 ### Classification non supervisée (CAH, kmeans) : 
-Les individus sont classés en fonction de la température, la humidité et la pression : 
+Les individus sont classés en fonction de la température, l'humidité et la pression : 
 
 - Classe 1 : Température moyenne élevée
 - Classe 2 : Température moyenne faible
@@ -47,7 +47,7 @@ Les individus sont classés en fonction de la température, la humidité et la p
 
 ### Première analyse : Jeu de données non équilibré
 
-lda légèrement meilleur que qda : taux de réussite environ égal à 75%
+lda légèrement meilleure que qda : taux de réussite environ égal à 75%
 
 Le modèle prédit "No" la plupart du temps -> taux d'erreur de No est petit, mais de Yes est très grand.  
 

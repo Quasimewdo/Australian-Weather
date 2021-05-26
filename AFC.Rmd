@@ -1,7 +1,6 @@
 ---
 title: "AFC"
-author: "Ruxue"
-date: "3/29/2021"
+author: "Majda & Ruxue"
 output:
   pdf_document: default
   html_document: default

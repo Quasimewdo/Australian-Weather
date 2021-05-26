@@ -1,7 +1,6 @@
 ---
 title: "Classification Supervisée"
-author: "Ruxue & Majda"
-date: "5/7/2021"
+author: "Majda & Ruxue"
 output: html_document
 ---
 
