@@ -2,9 +2,9 @@
 
 Assurez-vous bien de disposer des packages suivants:
 
-- tidyr #Gérer les dataframes
-- dplyr #Gérer les dataframes
-- lubridate #Gérer les dates
+- tidyr               #Gérer les dataframes
+- dplyr               #Gérer les dataframes
+- lubridate           #Gérer les dates
 - FactoMineR
 - MASS
 - cluster
