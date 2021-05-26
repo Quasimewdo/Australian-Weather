@@ -2,8 +2,8 @@
 title: "AFC"
 author: "Majda & Ruxue"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
 
 # Chargement des library
@@ -21,13 +21,13 @@ library(FactoMineR)
 ```{r}
 rm(list=ls())
 data <- read.csv("weatherAUS.csv")
-data
+str(data)
 ```
 # Suppression des variables inutiles : Evaporation, Sunshine, Cloud9am, Cloud3pm
 
 ```{r}
 data = data[, -c(6, 7, 18, 19)]
-data
+head(data)
 ```
 # Suppression des lignes contiennes des NA
 
@@ -35,25 +35,23 @@ data
 data = data %>% drop_na()
 ```
 
-# Ajout des variables Year, Month, Day
+# Ajout des variables Year
 
 ```{r}
 data <- mutate(data, Date = as.Date(Date))
-data = data %>% mutate(Year = year(Date),
-                       Month = month(Date), 
-                       Day = day(Date))
-data
+data = data %>% mutate(Year = year(Date))
+head(data)
 ```
 
 # Group by les lignes par location et par année
 
 ```{r}
 by_loca <- data %>% group_by(Location, Year)
-by_loca
+head(by_loca)
 ```
 # Visualisation de nombre de jours effectifs par année par ville
 ```{r}
-by_loca %>% count()
+head(by_loca %>% count())
 ```
 
 
@@ -64,7 +62,7 @@ by_year = by_loca %>% filter(Year >= 2010 & Year <= 2017)
 data_year<- by_year %>% group_by(Location)
 data_year = data_year %>% filter(n() > 2300)
 data_year <- data_year %>% slice(1:2300)
-data_year
+head(data_year)
 ```
 #Etudions la direction du vent pour chaque ville 
 
@@ -72,9 +70,6 @@ data_year
 list = data_year %>% group_by(Location, WindGustDir) %>% count()
 ```
 
-```{r}
-
-```
 #Construction d'un nouveau dataframe du type Election President
 #Individus : les villes
 #Variables : les direction du WindGustDir
@@ -102,7 +97,7 @@ dataAFD = as.data.frame(dataAFD)
 ```
 
 ```{r}
-dataAFD
+head(dataAFD)
 ```
 ```{r}
 str(dataAFD)
@@ -110,7 +105,6 @@ str(dataAFD)
 
 
 
-*!!!!!!Partie analyse : Ce n'est pas encore fait pour le moment!!!!!!*
 
 # ------------------------------------- Un breif PCA -----------------------------------------
 
