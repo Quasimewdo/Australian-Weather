@@ -18,6 +18,7 @@ library(rpart.plot)
 library(randomForest)
 library(ISLR)
 library(DMwR)
+library(biotools)
 ```
 
 # Chargement des données
@@ -160,11 +161,29 @@ ROC_qda$auc
 On voit que le modèle lda est légèrement meilleur que qda.
 On observe aussi que le modèle est déséquilibré, il prédit la plupart du temps 0, cad il ne pleura pas demain.
 
+```{r}
+dataBox = dataReady %>% mutate(RainToday = as.numeric(RainToday == "Yes"), 
+                               RainTomorrow = as.numeric(RainTomorrow == "Yes"))
+boxM(data = dataBox, grouping = dataReady$RainTomorrow)
+```
+
 
 # CART ------------------------------------------------------------------------------
 
 ```{r}
 arbre=rpart(RainTomorrow~.,data.train) 
+```
+
+```{r}
+#arbre le plus profond
+arbre=rpart(RainTomorrow~.,data.train,control=rpart.control(minsplit=5,cp=0))
+rpart.plot(arbre, type=4)
+```
+```{r}
+#xerror en fonction le nombre de noeuds
+set.seed(1)
+printcp(arbre)
+plotcp(arbre)
 ```
 
 

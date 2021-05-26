@@ -1,6 +1,7 @@
 ---
 title: "Analyse non supervisée"
 author: "Majda & Ruxue"
+date: "3/29/2021"
 output: html_document
 ---
 # Chargement des library
@@ -101,7 +102,7 @@ plot(cah.ward, hang=-1, cex=0.2)
 
 ## Nombre de classes ?
 
-Au vu du dendogramme, on va garder 4 ou 5 groupes  car après les hauteurs des branches deviennent trop grandes (à l'oeil, on de voir les paquets qui se détachent).
+Au vu du dendogramme, on va garder 4 ou 5 groupes  car après les hauteurs des branches deviennent trop grandes (à l'oeil, on peut voir les paquets qui se détachent).
 ```{r}
 cah.ward$height
 barplot(cah.ward$height)
@@ -237,10 +238,10 @@ res$eig
 plot(res, choix="var")
 ```
 
-axe 1 indique importance de la température
-axe 2 indique importance de la pression contre d'humidité
+axe 1 indique l'importance de la température
+axe 2 indique l'importance de la pression contre d'humidité
 
-#Plot selon Tla Température moyenne
+#Plot selon la Température moyenne
 ```{r}
 plot(res, choix="ind", habillage=10)
 ```
@@ -271,18 +272,18 @@ plot(res, choix="ind", habillage=11, cex=0.7, select= "cos2 0.7")
 Classe 1 : Température moyenne élevée
 Classe 2 : Température moyenne faible
 Classe 3 : Température moyenne-moyenne, Humidité faible, Pression élevée
-Classe 3 : Température moyenne-moyenne, Humidité forte, Pression faible
+Classe 4: Température moyenne-moyenne, Humidité forte, Pression faible
 
 ## Silhouette
 
-```{r}
+```{r} 
 sil= silhouette(kmeans.result$cluster,dist(data.cr))
 rownames(sil)=rownames(data)
 sil
 ```
 
-Cluster 2 a des silouettes proche de 1, donc bien placés.
-Cluster 1 a des individus dont silhouettes négétifs, donc mal placés.
+Cluster 2 a des silhouettes proches de 1, donc bien placés.
+Cluster 1 a des individus dont les silhouettes sont négétives, donc mal placés.
 
 ## PAM
 
