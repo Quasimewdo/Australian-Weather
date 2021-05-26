@@ -414,7 +414,7 @@ confusion['No','Yes']/sum(confusion[,'Yes']) )
 ```{r}
 boxplot(error, las=3)
 ```
-
+Nous observons que logit est légèrement meilleur que RF.
 
 Certes, avec un jeu d'apprentissage équilibré, notre taux de réussite est toujours environ 75%, mais cela vient du le fait que la météo est toujours compliqué à prédire, avec un tel taux de réussite est déja une bonne réussite. 
 
