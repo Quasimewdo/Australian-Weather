@@ -1,3 +1,23 @@
+# Librairies utilisées
+
+Assurez-vous bien de disposer des packages suivants:
+
+- tidyr #Gérer les dataframes
+- dplyr #Gérer les dataframes
+- lubridate #Gérer les dates
+- FactoMineR
+- MASS
+- cluster
+- pROC
+- klaR
+- rpart
+- rpart.plot
+- randomForest
+- ISLR
+- DMwR
+
+S'il vous en manque, il vous suffit d'entrer la commande install.package("nom_du_package_a_installer")
+
 # Australian-Weather
 
 Nous avons à disposition des données de la météo de l'Australie.   
