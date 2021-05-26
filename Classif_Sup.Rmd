@@ -34,7 +34,7 @@ data = data[, -c(6, 7, 8, 9, 10, 11, 12, 13, 18, 19)]
 head(data)
 ```
 
-# Suppression des lignes contiennes des NA
+# Suppression des lignes contenant des NA
 ```{r}
 data = data %>% drop_na()
 ```
@@ -57,7 +57,7 @@ by_loca <- data %>% group_by(Location, Year)
 head(by_loca)
 ```
 
-# Extraire 2300 lignes pour chaque ville
+# Extraction de 2300 lignes pour chaque ville
 ```{r}
 by_year = by_loca %>% filter(Year >= 2010 & Year <= 2017) 
 data_year<- by_year %>% group_by(Location)
@@ -116,7 +116,7 @@ predict_lda = predict(res_lda, data.test)$class
 predict_qda = predict(res_qda, data.test)$class
 ```
 
-## Table de confusion : utiliser la fonction table pour comparer DIFF de l'échantillon test et ce qui vous avez prédit. 
+## Table de confusion : utiliser la fonction table pour comparer DIFF de l'échantillon test et ce qu'on a prédit. 
 
 ```{r}
 table_lda = table(data.test$RainTomorrow, predict_lda)
@@ -140,8 +140,7 @@ accuracy_qda = (table_qda[1,1]+table_qda[2,2])/length(predict_qda) #mean(predict
 accuracy_qda
 ```
 
-## courbe ROC  ; voici le code
-Avec le package pROC : on represente la sensibilité en fonction de la spécificité (contrairement à ce qui est défini dans le cours ou c'est sensibilité en fonction de 1- spécificité)
+## courbe ROC  ; 
 
 ```{r}
 #proba a posteriori de succes (dans la deuxième colonne) : 
@@ -159,7 +158,7 @@ plot(ROC_qda, add=TRUE, col=2, print.auc=TRUE, print.auc.y=0.4)
 ROC_qda$auc
 ```
 On voit que le modèle lda est légèrement meilleur que qda.
-On observe aussi que le modèle est déséquilibré, il prédit la plupart du temps 0, cad il ne pleura pas demain.
+On observe aussi que le modèle est déséquilibré, il prédit la plupart du temps 0, cad il ne pleuvra pas demain.
 
 ```{r}
 dataBox = dataReady %>% mutate(RainToday = as.numeric(RainToday == "Yes"), 
@@ -259,7 +258,7 @@ confusion[1,2]/sum(confusion[1,])
 # erreur class No :
 confusion[2,1]/sum(confusion[2,])
 ```
-Globalement bonne accuracy ie peu d’erreurs mais beaucoup d’erreur pour classe Yes.
+Globalement bonne accuracy ie peu d’erreurs mais beaucoup d’erreur pour la classe Yes.
 
 ```{r}
 #proba a posteriori de succes (dans la deuxième colonne) : 
@@ -436,6 +435,6 @@ boxplot(error, las=3)
 
 Nous observons que logit est légèrement meilleur que RF.
 
-Certes, avec un jeu d'apprentissage équilibré, notre taux de réussite est toujours environ 75%, mais cela vient du le fait que la météo est toujours compliqué à prédire, avec un tel taux de réussite est déja une bonne réussite. 
+Certes, avec un jeu d'apprentissage équilibré, notre taux de réussite est toujours environ 75%, mais cela vient du fait que la météo est toujours compliquée à prédire. Le taux de réussite obtenu est en soit une bonne réussite !
 
 Cependant, même en ré-équilibrant le jeu, nous nous retrouvons toujours sur un prédicteur qui a tendance à toujours prédire NON, car nous avons toujours 2 fois plus de NON que Yes dans data.train.
