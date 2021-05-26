@@ -29,13 +29,13 @@ str(data)
 data = data[, -c(6, 7, 18, 19)]
 head(data)
 ```
-# Suppression des lignes contiennes des NA
+# Suppression des lignes contenant des NA
 
 ```{r}
 data = data %>% drop_na()
 ```
 
-# Ajout des variables Year
+# Ajout de la variable Year
 
 ```{r}
 data <- mutate(data, Date = as.Date(Date))
@@ -49,7 +49,7 @@ head(data)
 by_loca <- data %>% group_by(Location, Year)
 head(by_loca)
 ```
-# Visualisation de nombre de jours effectifs par année par ville
+# Visualisation du nombre de jours effectifs par année par ville
 ```{r}
 head(by_loca %>% count())
 ```
@@ -64,13 +64,13 @@ data_year = data_year %>% filter(n() > 2300)
 data_year <- data_year %>% slice(1:2300)
 head(data_year)
 ```
-#Etudions la direction du vent pour chaque ville 
+# Etudions la direction du vent pour chaque ville 
 
 ```{r}
 list = data_year %>% group_by(Location, WindGustDir) %>% count()
 ```
 
-#Construction d'un nouveau dataframe du type Election President
+# Construction d'un nouveau dataframe du type Election President
 #Individus : les villes
 #Variables : les direction du WindGustDir
 
@@ -106,7 +106,7 @@ str(dataAFD)
 
 
 
-# Un breif PCA -----------------------------------------
+# ------------------------------------- Un breif PCA -----------------------------------------
 
 ```{r}
 res = PCA(dataAFD)
@@ -115,14 +115,15 @@ On observe que
 - le premier axe représente plus l'opposition  East / West
 - le deuxieme axe représente plus l'opposition SN / WE
 
-# AFD commence ----------------------------------------------
+# --------------------------------- AFD commence ----------------------------------------------
 
 ## La part de chaque direction du vent
+
+apply(data, 2, sum) : sommer sur les colonnes de data
 
 ```{r}
 barplot(apply(dataAFD, 2, sum)/sum(dataAFD), las=3)
 ```
-
 On observe que les vents qui viennent de l'est et de l'ouest sont plus représentatifs.
 
 ## Les villes en terme de la direction du vent
@@ -130,7 +131,6 @@ On observe que les vents qui viennent de l'est et de l'ouest sont plus représen
 ```{r}
 barplot(apply(dataAFD, 1, sum)/sum(dataAFD), las=3)
 ```
-
 Les parts de chaque ville sont équitables, car nous avons extrait 2300 jours pour chaque ville.
 
 ```{r}
@@ -144,11 +144,6 @@ pvalue < 0.05 => On rejette H0 => les deux variables sont liées, et ne sont  do
 ```{r}
 res=CA(dataAFD)
 ```
-```{r}
-summary(res)
-```
-
-
 ```{r}
 res$eig
 ```
@@ -165,11 +160,10 @@ res$col$cos2
 ```
 
 
-Direction bien représentés
+Direction bien représentée
 ```{r}
 plot(res, invisible="row", selectCol="cos2 0.6")
 ```
-
 Seuls les vents qui viennent de la direction de l'Est sont bien représentés
 
 ```{r}
@@ -179,22 +173,14 @@ res$col$contrib
 ```{r}
 plot(res, invisible="row", selectCol="contrib 8")
 ```
-
 Axe 1: ENE / N
 Axe 2: SW / SE
 
-## Regarder axe 1 et 3
-
-```{r}
-plot(res, invisible="row", selectCol="contrib 8", axe=c(1, 3))
-```
-
-##Regarder axe 3 et 4
+##Regarder l'axe 3 et 4
 
 ```{r}
 plot(res, invisible="row", selectCol="contrib 8", axe=c(3, 4))
 ```
-
 Axe 3: NE / SE
 Axe 4: NNW / W
 
@@ -202,7 +188,6 @@ Axe 4: NNW / W
 ```{r}
 plot(res, invisible="row", selectCol="contrib 8", axe=c(1, 5))
 ```
-
 Axe 5: N / NE
 
 
@@ -222,7 +207,6 @@ Si on regarde un deuxième plan
 ```{r}
 plot(res, selectRow = "cos2 0.6", selectCol = "cos2 0.5", axe=c(3, 4))
 ```
-
 - Hobart a surtout du vent vient de Nord-West
 
 
