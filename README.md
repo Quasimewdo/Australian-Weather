@@ -51,8 +51,8 @@ Nous avons ajouté une variable AvgTemp pour faciliter l'analyse des résultats.
 
 ### ACP : 
 
-Axe 1 indique importance de la température.  
-Axe 2 indique importance de la pression contre d'humidité.  
+Axe 1 indique l'importance de la température.  
+Axe 2 indique l'importance de la pression par rapport à l'humidité.  
 
 ### Classification non supervisée (CAH, kmeans) : 
 Les individus sont classés en fonction de la température, l'humidité et la pression : 
