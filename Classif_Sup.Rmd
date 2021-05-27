@@ -220,6 +220,7 @@ fit_RF
 ```{r}
 plot(fit_RF)
 ```
+
 Représentation de l’erreur Out of Bag : Les données non utilisées dans les échantillons boostrap sont utilisées
 pour estimer l’erreur de classification : Pour l’observation numéro i, on regarde les échantillons bootstrapés ne
 contenant pas cette observation. On construit un arbre pour chacun de ces échantillons, et on prédit la classe
