@@ -306,7 +306,7 @@ res=FAMD(dataReady)
 ## On lance CAH avec la fonction HCPC
 
 ```{r}
-cah = HCPC(res, nb.clust = 4)
+cah = HCPC(res, nb.clust = -1)
 ```
 
 
