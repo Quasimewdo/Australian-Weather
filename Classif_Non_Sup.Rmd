@@ -65,7 +65,7 @@ data_year <- data_year %>% slice(1:2300)
 ```
 
 
-# On veut étudier Sydney, Sydney est le 19e ville dans la base
+# On veut étudier Sydney, Sydney est la 19ème ville dans la base
 
 On supprime la variable Location, car il n'y en a plus besoin.
 ```{r}
@@ -150,10 +150,10 @@ round(Means_groupes)
 ```
 
 Les groupes sont séparés selon la température:
-groupe 1 : AvgTemp = 21
-groupe 2 : AvgTemp = 23
-groupe 3 : AvgTemp = 19
-groupe 4 : AvgTemp = 17
+groupe 1 : AvgTemp = 21 <br>
+groupe 2 : AvgTemp = 23 <br>
+groupe 3 : AvgTemp = 19 <br>
+groupe 4 : AvgTemp = 17 <br>
 
 
 # Kmeans
@@ -238,8 +238,8 @@ res$eig
 plot(res, choix="var")
 ```
 
-axe 1 indique l'importance de la température
-axe 2 indique l'importance de la pression contre d'humidité
+axe 1 indique l'importance de la température <br>
+axe 2 indique l'importance de la pression contre d'humidité br>
 
 #Plot selon la Température moyenne
 ```{r}
@@ -269,10 +269,10 @@ res=PCA(data.Avecclasse,scale.unit=TRUE, quali.sup = 11, graph=FALSE)
 plot(res, choix="ind", habillage=11, cex=0.7, select= "cos2 0.7")
 ```
 
-Classe 1 : Température moyenne élevée
-Classe 2 : Température moyenne faible
-Classe 3 : Température moyenne-moyenne, Humidité faible, Pression élevée
-Classe 4: Température moyenne-moyenne, Humidité forte, Pression faible
+Classe 1 : Température moyenne élevée <br>
+Classe 2 : Température moyenne faible <br>
+Classe 3 : Température moyenne-moyenne, Humidité faible, Pression élevée <br>
+Classe 4: Température moyenne-moyenne, Humidité forte, Pression faible <br>
 
 ## Silhouette
 
@@ -282,8 +282,8 @@ rownames(sil)=rownames(data)
 sil
 ```
 
-Cluster 2 a des silhouettes proches de 1, donc bien placés.
-Cluster 1 a des individus dont les silhouettes sont négatives, donc mal placés.
+Cluster 2 a des silhouettes proches de 1, donc bien placés. <br>
+Cluster 1 a des individus dont les silhouettes sont négatives, donc mal placés. <br>
 
 ## PAM
 
