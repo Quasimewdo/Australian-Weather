@@ -1,7 +1,9 @@
 ---
 title: "Classification Supervisée"
 author: "Majda & Ruxue"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 # Chargement des library
@@ -220,7 +222,6 @@ fit_RF
 ```{r}
 plot(fit_RF)
 ```
-
 Représentation de l’erreur Out of Bag : Les données non utilisées dans les échantillons boostrap sont utilisées
 pour estimer l’erreur de classification : Pour l’observation numéro i, on regarde les échantillons bootstrapés ne
 contenant pas cette observation. On construit un arbre pour chacun de ces échantillons, et on prédit la classe
@@ -404,34 +405,7 @@ err_Yes = confusion['No','Yes']/sum(confusion[,'Yes']) # taux erreur classe Yes
 paste('err_Yes=',err_Yes)
 ```
 
-```{r}
-B=50
-error= matrix(NA, nrow=B, ncol=6)
-colnames(error)=c('RF total', 'logit total','RF No','logit No', 'logit Yes', 'RF Yes')
-for (b in 1:B)
-{
-set.seed(b)
-tr <- sample(1:n,n.test)
-data.test <- data[tr,]
-data.train <- data[-tr,]
-data.train.balanced <- SMOTE(RainTomorrow ~., as.data.frame(data.train))
-fit_RF <- randomForest(RainTomorrow~.,data.train.balanced)
-class_RF= predict(fit_RF, newdata=data.test, type="response")
-error[b,c(1,3,5)] = c(mean(class_RF != data.test$RainTomorrow), confusion['Yes', 'No']/sum(confusion[,'No']) ,
-confusion['No','Yes']/sum(confusion[,'Yes']) )
-logit.train <- glm(RainTomorrow ~ ., family = binomial , data=data.train.balanced)
-logit.train.AIC <- step(logit.train) #backward par defaut
-pred_logit <- predict(logit.train.AIC, data.test, type="response")
-class_logit <- ifelse(pred_logit >1/2, "Yes", "No")
-confusion = table(class_logit, data.test$RainTomorrow)
-error[b,c(2,4,6)] = c(mean(class_logit!= data.test$RainTomorrow), confusion['Yes', 'No']/sum(confusion[,'No']) ,
-confusion['No','Yes']/sum(confusion[,'Yes']) )
-}
-```
 
-```{r}
-boxplot(error, las=3)
-```
   
 
 Nous observons que logit est légèrement meilleur que RF.
